@@ -1,0 +1,8 @@
+Metadata-Version: 2.4
+Name: azure-builder-playground
+Version: 0.1.0
+Summary: Strict Pydantic schemas for constructing Storybook elements and pages
+Requires-Python: >=3.12
+Requires-Dist: pydantic<3,>=2.10
+Provides-Extra: dev
+Requires-Dist: pytest>=8.0; extra == "dev"

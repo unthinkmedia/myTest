@@ -1,0 +1,7 @@
+[45592445ms] [ERROR] Failed to load resource: net::ERR_CONNECTION_REFUSED @ http://localhost:6006/favicon.svg:0
+[45592448ms] [ERROR] WebSocket connection to 'ws://localhost:6006/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:6006/@vite/client:1034
+[45593451ms] [ERROR] WebSocket connection to 'ws://localhost:6006/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:6006/@vite/client:1034
+[45594453ms] [ERROR] WebSocket connection to 'ws://localhost:6006/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:6006/@vite/client:1034
+[45595454ms] [ERROR] WebSocket connection to 'ws://localhost:6006/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:6006/@vite/client:1034
+[45596456ms] [ERROR] WebSocket connection to 'ws://localhost:6006/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:6006/@vite/client:1034
+[45597461ms] [ERROR] WebSocket connection to 'ws://localhost:6006/' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED @ http://localhost:6006/@vite/client:1034

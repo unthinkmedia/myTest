@@ -1,0 +1,3 @@
+[    1009ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:6006/azure-icons/support.svg:0
+[    1023ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:6006/azure-icons/support.svg:0
+[    1038ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:6006/azure-icons/load-balancers.svg:0

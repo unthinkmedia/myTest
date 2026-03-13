@@ -1,0 +1,41 @@
+{
+  "servers": {
+    "storybook": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "storybook-mcp"
+      ],
+      "env": {
+        "STORYBOOK_URL": "https://gentle-smoke-0409f8010.1.azurestaticapps.net/index.json"
+      }
+    },
+    "figma": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "figma-developer-mcp",
+        "--stdio"
+      ],
+      "env": {
+        "FIGMA_API_KEY": "${input:figmaApiKey}"
+      }
+    },
+    "playwright": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "@playwright/mcp@latest"
+      ]
+    }
+  },
+  "inputs": [
+    {
+      "id": "figmaApiKey",
+      "type": "promptString",
+      "description": "Your Figma personal access token (generate at figma.com/developers/api#access-tokens)",
+      "password": true
+    }
+  ]
+}

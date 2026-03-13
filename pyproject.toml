@@ -1,0 +1,16 @@
+[project]
+name = "azure-builder-playground"
+version = "0.1.0"
+description = "Strict Pydantic schemas for constructing Storybook elements and pages"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.10,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+page-pipeline = "pipeline:main"

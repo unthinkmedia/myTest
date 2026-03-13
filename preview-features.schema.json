@@ -1,0 +1,95 @@
+{
+  "meta": {
+    "title": "Preview features",
+    "description": "Default Directory preview features page",
+    "route": "/default-directory/preview-features",
+    "topics": ["entra", "directory", "preview"]
+  },
+  "container": "azure",
+  "sideNav": {
+    "defaultSelected": "preview-features",
+    "collapsible": true,
+    "closable": true,
+    "width": 220,
+    "entries": [
+      { "kind": "item", "key": "overview", "label": "Overview", "icon": "Info" },
+      { "kind": "item", "key": "preview-features", "label": "Preview features", "icon": "PreviewFeatures" },
+      { "kind": "item", "key": "diagnose", "label": "Diagnose and solve problems", "icon": "Wrench" },
+      {
+        "kind": "group",
+        "label": "Manage",
+        "items": [
+          { "kind": "item", "key": "users", "label": "Users", "icon": "People" },
+          { "kind": "item", "key": "groups", "label": "Groups", "icon": "Group" },
+          { "kind": "item", "key": "external-identities", "label": "External Identities", "icon": "ExternalIdentities" },
+          { "kind": "item", "key": "roles", "label": "Roles and administrators", "icon": "Shield" },
+          { "kind": "item", "key": "admin-units", "label": "Administrative units", "icon": "Organization" },
+          { "kind": "item", "key": "delegated-admin", "label": "Delegated admin partners", "icon": "People" },
+          { "kind": "item", "key": "enterprise-apps", "label": "Enterprise applications", "icon": "Apps" },
+          { "kind": "item", "key": "devices", "label": "Devices", "icon": "Laptop" },
+          { "kind": "item", "key": "app-registrations", "label": "App registrations", "icon": "Grid" },
+          { "kind": "item", "key": "identity-governance", "label": "Identity Governance", "icon": "Shield" },
+          { "kind": "item", "key": "app-proxy", "label": "Application proxy", "icon": "Globe" },
+          { "kind": "item", "key": "custom-security", "label": "Custom security attributes", "icon": "Lock" },
+          { "kind": "item", "key": "licenses", "label": "Licenses", "icon": "Certificate" }
+        ]
+      }
+    ]
+  },
+  "title": {
+    "resourceName": "Default Directory",
+    "pageName": "Preview features",
+    "icon": "EntraID",
+    "breadcrumbs": ["Home", "Default Directory"],
+    "closable": true,
+    "moreActions": true
+  },
+  "essentials": null,
+  "commandBar": {
+    "items": [
+      {
+        "story": {
+          "storyId": "components-button--subtle",
+          "instanceId": "save-btn",
+          "argOverrides": { "label": "Save", "icon": "Save" }
+        },
+        "isSeparator": false
+      },
+      {
+        "story": {
+          "storyId": "components-button--subtle",
+          "instanceId": "discard-btn",
+          "argOverrides": { "label": "Discard", "icon": "Dismiss" }
+        },
+        "isSeparator": false
+      },
+      { "isSeparator": true },
+      {
+        "story": {
+          "storyId": "components-button--subtle",
+          "instanceId": "feedback-link",
+          "argOverrides": { "label": "Got feedback?", "icon": "People" }
+        },
+        "isSeparator": false
+      }
+    ]
+  },
+  "template": {
+    "kind": "list-table",
+    "description": "The following preview features are available for your evaluation. Help us make them better!",
+    "columns": [
+      { "key": "name", "header": "Name", "columnType": "text", "sortable": true, "truncate": true },
+      { "key": "category", "header": "Category", "columnType": "text", "sortable": true },
+      { "key": "services", "header": "Services", "columnType": "text", "sortable": true },
+      { "key": "releaseType", "header": "Release type", "columnType": "text", "sortable": true },
+      { "key": "releaseDate", "header": "Release date", "columnType": "date", "sortable": true },
+      { "key": "state", "header": "State", "columnType": "toggle", "sortable": true }
+    ],
+    "filters": {
+      "searchable": true,
+      "searchPlaceholder": "Search",
+      "addFilters": true
+    },
+    "pagination": true
+  }
+}

@@ -1,0 +1,6 @@
+pyproject.toml
+azure_builder_playground.egg-info/PKG-INFO
+azure_builder_playground.egg-info/SOURCES.txt
+azure_builder_playground.egg-info/dependency_links.txt
+azure_builder_playground.egg-info/requires.txt
+azure_builder_playground.egg-info/top_level.txt

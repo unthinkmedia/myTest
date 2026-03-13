@@ -1,0 +1,150 @@
+name: Deploy to Azure Builder Hub
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write  # Required for OIDC federated credential
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Read experiment metadata
+        id: meta
+        run: |
+          NAME=$(jq -r '.name // "Untitled"' experiment.json)
+          DESC=$(jq -r '.description // ""' experiment.json)
+          TAGS=$(jq -c '.tags // []' experiment.json)
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "description=$DESC" >> "$GITHUB_OUTPUT"
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+
+          TOPICS=$(find . -name '*.schema.json' -not -path './node_modules/*' \
+            -exec jq -r '.meta.topics // [] | .[]' {} + 2>/dev/null | sort -u | jq -Rsc 'split("\n") | map(select(length > 0))')
+          echo "topics=$TOPICS" >> "$GITHUB_OUTPUT"
+
+          LAYOUT=$(find . -name '*.schema.json' -not -path './node_modules/*' \
+            -exec jq -r '.meta.layout // empty' {} + 2>/dev/null | head -1)
+          echo "layout=${LAYOUT:-full-width}" >> "$GITHUB_OUTPUT"
+
+          PAGE_COUNT=$(find . -name '*.schema.json' -not -path './node_modules/*' | wc -l | tr -d ' ')
+          echo "pageCount=${PAGE_COUNT:-1}" >> "$GITHUB_OUTPUT"
+
+          # Read Hub URL from deploy.config.json
+          HUB_URL=$(jq -r '.hubApiUrl' deploy.config.json)
+          echo "hubUrl=$HUB_URL" >> "$GITHUB_OUTPUT"
+
+      # ── Authenticate via Azure OIDC (no secrets stored) ──
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get Azure token
+        id: token
+        run: |
+          TOKEN=$(az account get-access-token --resource https://management.azure.com --query accessToken -o tsv)
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
+
+      # ── Register with Hub (returns projectId, version, and SAS upload URL) ──
+      - name: Register project with Hub
+        id: register
+        run: |
+          RESPONSE=$(curl -sf -X POST "${{ steps.meta.outputs.hubUrl }}/api/deploy" \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ steps.token.outputs.token }}" \
+            -d @- <<EOF
+          {
+            "repoOwner": "${{ github.repository_owner }}",
+            "repoName": "${{ github.event.repository.name }}",
+            "experimentName": "${{ steps.meta.outputs.name }}",
+            "description": "${{ steps.meta.outputs.description }}",
+            "topics": ${{ steps.meta.outputs.topics }},
+            "tags": ${{ steps.meta.outputs.tags }},
+            "layout": "${{ steps.meta.outputs.layout }}",
+            "pageCount": ${{ steps.meta.outputs.pageCount }},
+            "authorName": "${{ github.actor }}",
+            "changelog": "Deployed from commit ${{ github.sha }}"
+          }
+          EOF
+          )
+          PROJECT_ID=$(echo "$RESPONSE" | jq -r '.projectId')
+          VERSION=$(echo "$RESPONSE" | jq -r '.version')
+          UPLOAD_URL=$(echo "$RESPONSE" | jq -r '.uploadUrl')
+          echo "projectId=$PROJECT_ID" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "::add-mask::$UPLOAD_URL"
+          echo "uploadUrl=$UPLOAD_URL" >> "$GITHUB_OUTPUT"
+          echo "Registered project $PROJECT_ID at version $VERSION"
+
+      # ── Generate thumbnail ──
+      - name: Install Playwright
+        run: npx playwright install chromium --with-deps
+
+      - name: Generate thumbnail
+        run: |
+          npx vite preview --port 4174 &
+          sleep 3
+          node -e "
+            const { chromium } = require('playwright');
+            (async () => {
+              const browser = await chromium.launch();
+              const page = await browser.newPage({ viewport: { width: 1200, height: 630 } });
+              await page.goto('http://localhost:4174', { waitUntil: 'networkidle' });
+              await page.screenshot({ path: 'dist/thumbnail.png' });
+              await browser.close();
+            })();
+          "
+          kill %1 2>/dev/null || true
+
+      # ── Upload dist/ using SAS URL from the Hub API ──
+      - name: Upload to Azure Blob Storage
+        run: |
+          PREFIX="${{ steps.register.outputs.projectId }}/v${{ steps.register.outputs.version }}"
+          UPLOAD_URL="${{ steps.register.outputs.uploadUrl }}"
+          BASE_URL="${UPLOAD_URL%%\?*}"
+          SAS_TOKEN="${UPLOAD_URL#*\?}"
+
+          find dist -type f | while read -r FILE; do
+            REL_PATH="${FILE#dist/}"
+            BLOB_URL="${BASE_URL}/${PREFIX}/${REL_PATH}?${SAS_TOKEN}"
+
+            # Detect content type
+            case "${FILE##*.}" in
+              html) CT="text/html" ;;
+              js)   CT="application/javascript" ;;
+              css)  CT="text/css" ;;
+              json) CT="application/json" ;;
+              png)  CT="image/png" ;;
+              svg)  CT="image/svg+xml" ;;
+              jpg|jpeg) CT="image/jpeg" ;;
+              *)    CT="application/octet-stream" ;;
+            esac
+
+            curl -sf -X PUT "$BLOB_URL" \
+              -H "x-ms-blob-type: BlockBlob" \
+              -H "Content-Type: $CT" \
+              --data-binary "@$FILE"
+          done
+          echo "Upload complete"
